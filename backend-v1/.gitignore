@@ -1,4 +1,6 @@
 node_modules
 private.pem
 public.pem
-uploads
+encrypted
+decrypted
+.env

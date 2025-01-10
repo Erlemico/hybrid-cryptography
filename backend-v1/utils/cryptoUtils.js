@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const fs = require('fs');
 
-// Fungsi untuk enkripsi menggunakan AES
+// Function for encryption using AES
 function encryptWithAES(fileBuffer, key) {
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
@@ -9,22 +9,21 @@ function encryptWithAES(fileBuffer, key) {
     return { encryptedData, iv };
 }
 
-// Fungsi untuk enkripsi kunci AES menggunakan RSA
+// Function for AES key encryption using RSA
 function encryptAESKeyWithRSA(key, publicKey) {
     return crypto.publicEncrypt(publicKey, key);
 }
 
-// Fungsi dekripsi kunci AES menggunakan RSA
+// AES key decryption function using RSA
 function decryptAESKeyWithRSA(encryptedKey, privateKey) {
     return crypto.privateDecrypt(privateKey, encryptedKey);
 }
 
-// Fungsi dekripsi file menggunakan AES
+// File decryption function using AES
 function decryptWithAES(encryptedData, key, iv) {
     const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
     const decryptedData = Buffer.concat([decipher.update(encryptedData), decipher.final()]);
     return decryptedData;
 }
 
-module.exports = { decryptAESKeyWithRSA, decryptWithAES };
-module.exports = { encryptWithAES, encryptAESKeyWithRSA };
+module.exports = { encryptWithAES, encryptAESKeyWithRSA, decryptAESKeyWithRSA, decryptWithAES };
