@@ -70,6 +70,7 @@ exports.getAllData = async (req, res, next) => {
       fileName: file.fileName,
       rsaKey: file.rsaKey,
       iv: file.iv,
+      createdAt: file.createdAt,
     }));
 
     // 4. Return the response to the client
@@ -106,6 +107,7 @@ exports.getById = async (req, res, next) => {
       fileName: file.fileName,
       rsaKey: file.rsaKey,
       iv: file.iv,
+      createdAt: file.createdAt,
     };
 
     // 5. Return the response to the client

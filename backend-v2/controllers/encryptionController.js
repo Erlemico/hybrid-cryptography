@@ -1,12 +1,17 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const osutils = require('os-utils');
+const pidusage = require('pidusage');
 const { encryptWithAES, encryptAESKeyWithRSA } = require('../utils/cryptoUtils');
 
 const RSA_PUBLIC_KEY = fs.readFileSync('public.pem', 'utf8');
 
 exports.uploadAndEncryptFile = async (req, res) => {
     try {
+        const startTime = process.hrtime(); // Mulai pencatatan waktu
+        const initialMemoryUsage = process.memoryUsage().heapUsed / 1024 / 1024; // RAM awal dalam MB
+
         // 1. Check if there is an uploaded file
         if (!req.files || !req.files.file) {
             console.error('No file uploaded:', req.files);
@@ -28,63 +33,44 @@ exports.uploadAndEncryptFile = async (req, res) => {
         const filePath = path.join(uploadsDir, file.name);
 
         // 3. Save file to temporary folder
-        try {
-            await file.mv(filePath); // Wait for the file to move
-            console.log(`File saved to: ${filePath}`);
-        } catch (err) {
-            console.error('Failed to save file:', err);
-            return res.status(500).json({
-                status: "error",
-                message: 'Failed to save file',
-                error: err.message
-            });
-        }
+        await file.mv(filePath);
+        console.log(`File saved to: ${filePath}`);
 
         // 4. Read files and encrypt with AES
         const aesKey = crypto.randomBytes(32); // Generate 256-bit AES key
         const fileBuffer = fs.readFileSync(filePath); // Read file
 
         let encryptedData, iv;
-        try {
-            ({ encryptedData, iv } = encryptWithAES(fileBuffer, aesKey));
-            console.log('File encrypted with AES');
-        } catch (err) {
-            console.error('Failed to encrypt file with AES:', err);
-            return res.status(500).json({
-                status: "error",
-                message: 'Failed to encrypt file',
-                error: err.message
-            });
-        }
+        ({ encryptedData, iv } = encryptWithAES(fileBuffer, aesKey));
+        console.log('File encrypted with AES');
 
         // 5. Save encrypted file
         const encryptedFileName = `${file.name}.enc`;
         const encryptedFilePath = path.join(uploadsDir, encryptedFileName);
-        try {
-            fs.writeFileSync(encryptedFilePath, encryptedData);
-            console.log(`Encrypted file saved to: ${encryptedFilePath}`);
-        } catch (err) {
-            console.error('Failed to save encrypted file:', err);
-            return res.status(500).json({
-                status: "error",
-                message: 'Failed to save encrypted file',
-                error: err.message
-            });
-        }
+        fs.writeFileSync(encryptedFilePath, encryptedData);
+        console.log(`Encrypted file saved to: ${encryptedFilePath}`);
 
         // 6. Encrypt AES key with RSA
-        let rsaKey;
-        try {
-            rsaKey = encryptAESKeyWithRSA(aesKey, RSA_PUBLIC_KEY);
-            console.log('AES key encrypted with RSA');
-        } catch (err) {
-            console.error('Failed to encrypt AES key with RSA:', err);
-            return res.status(500).json({
-                status: "error",
-                message: 'Failed to encrypt AES key',
-                error: err.message
+        const rsaKey = encryptAESKeyWithRSA(aesKey, RSA_PUBLIC_KEY);
+        console.log('AES key encrypted with RSA');
+
+        // End time
+        const [seconds, nanoseconds] = process.hrtime(startTime);
+        const elapsedTime = (seconds * 1000 + nanoseconds / 1e6).toFixed(2); // Waktu dalam ms
+        const finalMemoryUsage = process.memoryUsage().heapUsed / 1024 / 1024; // RAM akhir dalam MB
+        const memoryDifference = (finalMemoryUsage - initialMemoryUsage).toFixed(2); // RAM yang digunakan dalam MB
+
+        // CPU Usage
+        const cpuUsage = await new Promise((resolve, reject) => {
+            pidusage(process.pid, (err, stats) => {
+                if (err) return reject(err);
+                resolve(stats.cpu); // CPU usage dalam persen
             });
-        }
+        });
+
+        console.log(`Encryption Time: ${elapsedTime} ms`);
+        console.log(`Memory Usage: ${memoryDifference} MB`);
+        console.log(`CPU Usage: ${cpuUsage.toFixed(2)}%`);
 
         // 7. Return response to the client
         res.status(201).json({
@@ -94,6 +80,11 @@ exports.uploadAndEncryptFile = async (req, res) => {
                 fileName: `/encrypted/${encryptedFileName}`, // Tambahkan path relatif di sini
                 rsaKey: rsaKey.toString('base64'), // Encrypted AES key
                 iv: iv.toString('base64'), // Initialization vector
+                performance: {
+                    elapsedTime: `${elapsedTime} ms`,
+                    memoryUsed: `${memoryDifference} MB`,
+                    cpuUsage: `${cpuUsage.toFixed(2)}%`,
+                },
             }
         });
     } catch (err) {
@@ -105,7 +96,6 @@ exports.uploadAndEncryptFile = async (req, res) => {
         });
     }
 };
-
 
 // API untuk mendapatkan daftar semua file terenkripsi
 exports.getAllEncryptedFiles = (req, res) => {
