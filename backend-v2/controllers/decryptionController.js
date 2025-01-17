@@ -132,13 +132,13 @@ exports.decryptById = async (req, res) => {
         const startTime = process.hrtime();
         const initialMemoryUsage = process.memoryUsage().heapUsed / 1024 / 1024;
 
-        // 1. Retrieve the ID from request parameters
-        const { id } = req.params;
+        // 1. Retrieve the ID from the request body
+        const { id } = req.body;
 
         if (!id) {
             return res.status(400).json({
                 status: "error",
-                message: "Missing ID parameter",
+                message: "Missing ID parameter in body",
             });
         }
 
