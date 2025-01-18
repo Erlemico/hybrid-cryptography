@@ -77,7 +77,7 @@ exports.uploadAndEncryptFile = async (req, res) => {
             status: "success",
             message: 'File encrypted successfully',
             data: {
-                fileName: `/encrypted/${encryptedFileName}`, // Tambahkan path relatif di sini
+                fileName: encryptedFileName, // Tambahkan path relatif di sini
                 rsaKey: rsaKey.toString('base64'), // Encrypted AES key
                 iv: iv.toString('base64'), // Initialization vector
                 performance: {
