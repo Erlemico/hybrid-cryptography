@@ -110,7 +110,7 @@ exports.downloadAndDecryptFile = async (req, res) => {
         // 7. Return decrypted file path to client
         res.json({
             message: 'File decrypted successfully',
-            decryptedFilePath: `/decrypted/${decryptedFileName}`, // URL relatif
+            decryptedFilePath: decryptedFileName,
             performance: {
                 elapsedTime: `${elapsedTime} ms`,
                 memoryUsed: `${memoryDifference} MB`,
