@@ -96,38 +96,3 @@ exports.uploadAndEncryptFile = async (req, res) => {
         });
     }
 };
-
-// API untuk mendapatkan daftar semua file terenkripsi
-exports.getAllEncryptedFiles = (req, res) => {
-    const encryptedDir = path.join(__dirname, '../encrypted'); // Path folder encrypted
-
-    // Cek apakah direktori encrypted ada
-    if (!fs.existsSync(encryptedDir)) {
-        return res.status(404).json({
-            status: "error",
-            message: "Encrypted directory not found",
-        });
-    }
-
-    try {
-        // Baca isi direktori
-        const files = fs.readdirSync(encryptedDir).filter(file => file.endsWith('.enc')); // Hanya file .enc
-
-        // Kirim daftar file sebagai respons
-        res.status(200).json({
-            status: "success",
-            message: "List of encrypted files",
-            data: files.map((file, index) => ({
-                id: index + 1, // ID increment dimulai dari 1
-                fileName: file,
-            })),
-        });
-    } catch (err) {
-        console.error('Error reading encrypted directory:', err);
-        res.status(500).json({
-            status: "error",
-            message: "Failed to retrieve encrypted files",
-            error: err.message,
-        });
-    }
-};

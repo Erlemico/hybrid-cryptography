@@ -1,5 +1,5 @@
 const express = require('express');
-const { uploadAndEncryptFile, getAllEncryptedFiles } = require('../controllers/encryptionController');
+const { uploadAndEncryptFile } = require('../controllers/encryptionController');
 const { downloadAndDecryptFile, decryptById } = require('../controllers/decryptionController');
 const { saveData, getAllData, getById } = require('../controllers/deliveryController');
 const { simulateBruteForceById } = require('../controllers/bruteforceController');
@@ -13,8 +13,5 @@ router.post('/send-key', saveData); // Send information to db
 router.get('/get-key', getAllData); // Get information from db
 router.get('/get-key/:id', getById); // Get information from db
 router.post('/bruteforce/:id', simulateBruteForceById);
-
-// Endpoint untuk mendapatkan daftar file terenkripsi
-router.get('/files', getAllEncryptedFiles);
 
 module.exports = router;
