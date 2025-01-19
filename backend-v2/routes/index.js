@@ -7,11 +7,11 @@ const { simulateBruteForceById } = require('../controllers/bruteforceController'
 const router = express.Router();
 
 router.post('/encrypt', uploadAndEncryptFile); // Upload and encrypt
-router.post('/decrypt', downloadAndDecryptFile); // Decrypt and download
+router.post('/decrypt', downloadAndDecryptFile); // Decrypt and view the result
 router.post('/decrypt-by-id', decryptById); // Decrypt and download
 router.post('/send-key', saveData); // Send information to db
 router.get('/get-key', getAllData); // Get information from db
 router.get('/get-key/:id', getById); // Get information from db
-router.post('/bruteforce/:id', simulateBruteForceById);
+router.post('/bruteforce', simulateBruteForceById); // Bruteforce to decrypt encrypted file
 
 module.exports = router;

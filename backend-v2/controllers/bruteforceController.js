@@ -99,9 +99,12 @@ exports.simulateBruteForceById = async (req, res) => {
 
         // 5. Send response to client
         res.json({
+            status: "success",
             message: 'Brute-force simulation completed successfully',
-            foundKey,
-            decryptedFilePath: `/decrypted/${decryptedFileName}`,
+            data: {
+                foundKey,
+                decryptedFilePath: decryptedFileName,
+            }
         });
     } catch (err) {
         console.error('Error during brute-force simulation:', err);
